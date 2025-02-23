@@ -15,7 +15,7 @@ FFmpeg Helper is a command-line tool that simplifies the use of FFmpeg by provid
 
 2. **Clone the Repository**:
    ```bash
-   git clone https://gitlab.com/Dastanaron/ffmpeg-helper.git
+   git clone https://github.com/dastanaron/ffmpeg-helper.git
    cd ffmpeg-helper
    ```
 

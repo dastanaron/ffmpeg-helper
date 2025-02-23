@@ -6,12 +6,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/dastanaron/ffmpeg-helper/commands"
+	"github.com/dastanaron/ffmpeg-helper/ffmpeg"
+	"github.com/dastanaron/ffmpeg-helper/helpers"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/schollz/progressbar/v3"
-	"gitlab.com/Dastanaron/ffmpeg-helper/commands"
-	"gitlab.com/Dastanaron/ffmpeg-helper/ffmpeg"
-	"gitlab.com/Dastanaron/ffmpeg-helper/helpers"
 )
 
 const COMMANDS_FILE = "commands.yaml"

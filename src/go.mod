@@ -1,4 +1,4 @@
-module gitlab.com/Dastanaron/ffmpeg-helper
+module github.com/dastanaron/ffmpeg-helper
 
 go 1.23
 

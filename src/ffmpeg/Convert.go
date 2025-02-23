@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os/exec"
 
-	"gitlab.com/Dastanaron/ffmpeg-helper/commands"
+	"github.com/dastanaron/ffmpeg-helper/commands"
 )
 
 type Converter struct {
