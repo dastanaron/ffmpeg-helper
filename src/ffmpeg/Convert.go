@@ -2,7 +2,6 @@ package ffmpeg
 
 import (
 	"errors"
-	"fmt"
 	"os/exec"
 
 	"gitlab.com/Dastanaron/ffmpeg-helper/commands"
@@ -31,7 +30,6 @@ func NewConverter(srcFilePath string, outputFilePath string, command commands.Co
 }
 
 func (conv *Converter) Execute() error {
-	fmt.Println(conv.Command, conv.CommandArgs)
 	if conv.Command == "" {
 		return errors.New("command is empty")
 	}

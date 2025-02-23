@@ -109,6 +109,6 @@ func main() {
 	})
 
 	if err := app.SetRoot(menu, true).SetFocus(list).Run(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
