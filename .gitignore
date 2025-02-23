@@ -1,3 +1,4 @@
 data
+!/build/deb-build.sh
 build
 .nvim
