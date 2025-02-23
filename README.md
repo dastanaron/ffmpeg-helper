@@ -21,7 +21,12 @@ FFmpeg Helper is a command-line tool that simplifies the use of FFmpeg by provid
 
 3. **Build the Program**:
    ```bash
-   go build -o ffmpeg-helper
+   cd src && go build -o ffmpeg-helper
+   ```
+
+   or
+   ```bash
+   make
    ```
 
 4. **Run the Program**:

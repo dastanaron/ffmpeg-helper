@@ -16,6 +16,7 @@ import (
 
 const COMMANDS_FILE = "commands.yaml"
 const APP_NAME = "ffmpeg-helper"
+const APP_VERSION = "1.0.0"
 
 //go:embed default.commands.yaml
 var defaultCommands []byte
@@ -27,6 +28,8 @@ type AppConfig struct {
 }
 
 func main() {
+	defaultRuntimeCommands()
+
 	runtimeArgs := os.Args[1:]
 
 	if len(runtimeArgs) < 2 {
@@ -140,4 +143,22 @@ func runCommand(config *AppConfig, index int) {
 
 	<-done
 	os.Exit(0)
+}
+
+func defaultRuntimeCommands() {
+	runtimeArgs := os.Args[1:]
+
+	if runtimeArgs[0] == "--version" {
+		fmt.Println(APP_NAME, "version:", APP_VERSION)
+		os.Exit(0)
+	}
+
+	if runtimeArgs[0] == "--help" {
+		fmt.Println(`
+      Run ./ffmpeg-helper inputFile outputFile
+      Custom commands ~/.config/ffmpeg-helper/commands.yaml
+      More see https://github.com/dastanaron/ffmpeg-helper
+      `)
+		os.Exit(0)
+	}
 }
