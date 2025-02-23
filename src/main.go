@@ -18,6 +18,12 @@ const CUSTOM_COMMANDS_FILE = "./commands.yaml"
 //go:embed default.commands.yaml
 var defaultCommands string
 
+type AppConfig struct {
+	InputFilePath  string
+	OutputFilePath string
+	CommandsList   *[]commands.Command
+}
+
 func main() {
 	runtimeArgs := os.Args[1:]
 
@@ -32,12 +38,30 @@ func main() {
 		log.Fatal("Required arguments inputFile and outputFile")
 	}
 
+	commandsList, err := loadCommands()
+	helpers.CheckError("Error loading commands", err)
+
+	config := &AppConfig{
+		InputFilePath:  inputFilePath,
+		OutputFilePath: outputFilePath,
+		CommandsList:   commandsList,
+	}
+
+	app := tview.NewApplication()
+	setupUI(app, config)
+
+	if err := app.EnableMouse(true).Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func loadCommands() (*[]commands.Command, error) {
 	commandsList, err := commands.ParseFromString(defaultCommands)
 	helpers.CheckError("Error parsing default commands", err)
 
 	if _, err := os.Stat(CUSTOM_COMMANDS_FILE); err == nil {
 		customCommandsYaml, err := os.ReadFile(CUSTOM_COMMANDS_FILE)
-		helpers.CheckError("Error open custom commands file", err)
+		helpers.CheckError("Error reading custom commands file", err)
 
 		customCommands, err := commands.ParseFromBytes(customCommandsYaml)
 		helpers.CheckError("Error parsing custom commands", err)
@@ -45,50 +69,26 @@ func main() {
 		*commandsList = append(*commandsList, *customCommands...)
 	}
 
-	app := tview.NewApplication()
+	return commandsList, nil
+}
 
+func setupUI(app *tview.Application, config *AppConfig) {
 	menu := tview.NewFlex()
 
 	list := tview.NewList()
 	list.SetTitle("Select command")
 	list.SetBorder(true).SetBorderColor(tcell.ColorGray)
 
-	menu.AddItem(list, 0, 1, false)
-
 	textView := tview.NewTextView().SetDynamicColors(true)
 	textView.SetTitle("Description")
 	textView.SetBorder(true).SetBorderColor(tcell.ColorGreenYellow)
 
-	for i, v := range *commandsList {
+	for index, v := range *config.CommandsList {
 		list.AddItem(v.Name, "", 0, func() {
 			app.Stop()
-
-			command := (*commandsList)[list.GetCurrentItem()]
-
-			bar := progressbar.Default(100)
-
-			converter := ffmpeg.NewConverter(inputFilePath, outputFilePath, command)
-
-			c := make(chan uint)
-
-			go func(c chan uint, converter ffmpeg.Converter, bar *progressbar.ProgressBar) {
-				for progressPercent := range converter.ProgressChannel {
-					bar.Set(progressPercent)
-				}
-
-				c <- 1
-			}(c, converter, bar)
-
-			converter.Execute()
-
-			end := <-c
-
-			if end == 1 {
-				os.Exit(0)
-			}
-
+			runCommand(config, index)
 		})
-		if i == 0 {
+		if index == 0 {
 			textView.SetText(v.Description)
 		}
 	}
@@ -97,18 +97,37 @@ func main() {
 		app.Stop()
 	})
 
+	menu.AddItem(list, 0, 1, false)
 	menu.AddItem(textView, 0, 1, false)
 
 	list.SetChangedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
-		if index > len(*commandsList)-1 {
+		if index > len(*config.CommandsList)-1 {
 			return
 		}
-
-		description := (*commandsList)[index].Description
-		textView.SetText(description)
+		textView.SetText((*config.CommandsList)[index].Description)
 	})
 
-	if err := app.SetRoot(menu, true).SetFocus(list).Run(); err != nil {
-		log.Fatal(err)
-	}
+	app.SetRoot(menu, true)
+	app.SetFocus(list)
+}
+
+func runCommand(config *AppConfig, index int) {
+	command := (*config.CommandsList)[index]
+
+	bar := progressbar.Default(100)
+	converter := ffmpeg.NewConverter(config.InputFilePath, config.OutputFilePath, command)
+
+	done := make(chan uint)
+
+	go func(c chan uint, converter ffmpeg.Converter, bar *progressbar.ProgressBar) {
+		for progressPercent := range converter.ProgressChannel {
+			bar.Set(progressPercent)
+		}
+		c <- 1
+	}(done, converter, bar)
+
+	converter.Execute()
+
+	<-done
+	os.Exit(0)
 }

@@ -39,24 +39,28 @@ func asyncParsingProgress(buffer *bufio.Reader, channel chan int) {
 			fmt.Println(err)
 			break
 		}
-		matched, err := regexp.Match(`(?i)duration.*`, byteLine)
 
+		pattern, err := regexp.Compile("(?i)duration.*")
 		if err != nil {
 			fmt.Println(err)
 		}
 
+		matched := pattern.Match(byteLine)
+
 		if matched {
-			line := fmt.Sprintf("%s", byteLine)
+			line := string(byteLine)
 			durationInSeconds = parseTime(`ion:\s([\d]{2}):([\d]{2}):([\d]{2})`, line)
 		}
 
-		matched, err = regexp.Match(`time=.*`, byteLine)
+		pattern, err = regexp.Compile("time=.*")
 		if err != nil {
 			fmt.Println(err)
 		}
 
+		matched = pattern.Match(byteLine)
+
 		if matched {
-			line := fmt.Sprintf("%s", byteLine)
+			line := string(byteLine)
 			convertedTime := parseTime(`time=([\d]{2}):([\d]{2}):([\d]{2})`, line)
 			percent := float64(convertedTime) / float64(durationInSeconds) * float64(100)
 
@@ -70,7 +74,12 @@ func asyncParsingProgress(buffer *bufio.Reader, channel chan int) {
 }
 
 func parseTime(eregexp string, time string) int {
-	ereg := regexp.MustCompile(eregexp)
+	ereg, err := regexp.Compile(eregexp)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	matches := ereg.FindStringSubmatch(time)
 	hours, _ := strconv.Atoi(matches[1])
 	minutes, _ := strconv.Atoi(matches[2])
