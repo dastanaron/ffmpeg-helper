@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"os"
 
@@ -13,10 +14,11 @@ import (
 	"gitlab.com/Dastanaron/ffmpeg-helper/helpers"
 )
 
-const CUSTOM_COMMANDS_FILE = "./commands.yaml"
+const COMMANDS_FILE = "commands.yaml"
+const APP_NAME = "ffmpeg-helper"
 
 //go:embed default.commands.yaml
-var defaultCommands string
+var defaultCommands []byte
 
 type AppConfig struct {
 	InputFilePath  string
@@ -56,18 +58,26 @@ func main() {
 }
 
 func loadCommands() (*[]commands.Command, error) {
-	commandsList, err := commands.ParseFromString(defaultCommands)
-	helpers.CheckError("Error parsing default commands", err)
+	homeDir, err := os.UserHomeDir()
+	helpers.CheckError("No homedir", err)
+	appConfigPath := fmt.Sprintf("%s/.config/%s", homeDir, APP_NAME)
+	appCommandsFile := fmt.Sprintf("%s/%s", appConfigPath, COMMANDS_FILE)
 
-	if _, err := os.Stat(CUSTOM_COMMANDS_FILE); err == nil {
-		customCommandsYaml, err := os.ReadFile(CUSTOM_COMMANDS_FILE)
-		helpers.CheckError("Error reading custom commands file", err)
+	_, err = os.Stat(appCommandsFile)
 
-		customCommands, err := commands.ParseFromBytes(customCommandsYaml)
-		helpers.CheckError("Error parsing custom commands", err)
+	if err != nil {
+		err = os.MkdirAll(appConfigPath, 0744)
+		helpers.CheckError("Cannot create config dir", err)
 
-		*commandsList = append(*commandsList, *customCommands...)
+		err = os.WriteFile(appCommandsFile, defaultCommands, 0644)
+		helpers.CheckError("Cannot create commands file", err)
 	}
+
+	commandsYaml, err := os.ReadFile(appCommandsFile)
+	helpers.CheckError("Error reading commands file", err)
+
+	commandsList, err := commands.ParseFromBytes(commandsYaml)
+	helpers.CheckError("Error parsing commands", err)
 
 	return commandsList, nil
 }

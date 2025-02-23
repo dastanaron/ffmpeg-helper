@@ -16,10 +16,6 @@ type CommandYaml struct {
 	Commands []Command `yaml:"commands"`
 }
 
-func ParseFromString(yamlData string) (*[]Command, error) {
-	return ParseFromBytes([]byte(yamlData))
-}
-
 func ParseFromBytes(yamlData []byte) (*[]Command, error) {
 	var data CommandYaml
 
