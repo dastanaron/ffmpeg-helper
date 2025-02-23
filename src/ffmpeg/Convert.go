@@ -3,6 +3,8 @@ package ffmpeg
 import (
 	"errors"
 	"os/exec"
+
+	"gitlab.com/Dastanaron/ffmpeg-helper/commands"
 )
 
 type Converter struct {
@@ -11,11 +13,6 @@ type Converter struct {
 	InputFile       string
 	OutputFile      string
 	CmdOutput       []byte
-}
-
-type Command struct {
-	Name string
-	Cmd  string
 }
 
 func NewConverter(srcFilePath string, outputFilePath string) Converter {
@@ -27,11 +24,11 @@ func NewConverter(srcFilePath string, outputFilePath string) Converter {
 	}
 }
 
-func (conv *Converter) SelectCommand(name string, commands []Command) Converter {
+func (conv *Converter) SelectCommand(name string, commands []commands.Command) Converter {
 	command := ""
 	for _, v := range commands {
 		if v.Name == name {
-			command = v.Cmd
+			command = v.CMD
 		}
 	}
 
