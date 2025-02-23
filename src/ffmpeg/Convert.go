@@ -3,48 +3,37 @@ package ffmpeg
 import (
 	"errors"
 	"os/exec"
+
+	"github.com/dastanaron/ffmpeg-helper/commands"
 )
 
 type Converter struct {
 	ProgressChannel chan int
 	Command         string
+	CommandArgs     []string
 	InputFile       string
 	OutputFile      string
 	CmdOutput       []byte
 }
 
-type Command struct {
-	Name string
-	Cmd  string
-}
+func NewConverter(srcFilePath string, outputFilePath string, command commands.Command) Converter {
+	command.ApplyPaths(srcFilePath, outputFilePath)
+	cmd, cmdArgs := command.SplitCommand()
 
-func NewConverter(srcFilePath string, outputFilePath string) Converter {
 	return Converter{
 		ProgressChannel: make(chan int),
-		Command:         "",
+		Command:         cmd,
+		CommandArgs:     cmdArgs,
 		InputFile:       srcFilePath,
 		OutputFile:      outputFilePath,
 	}
-}
-
-func (conv *Converter) SelectCommand(name string, commands []Command) Converter {
-	command := ""
-	for _, v := range commands {
-		if v.Name == name {
-			command = v.Cmd
-		}
-	}
-
-	conv.Command = command
-
-	return *conv
 }
 
 func (conv *Converter) Execute() error {
 	if conv.Command == "" {
 		return errors.New("command is empty")
 	}
-	cmd := exec.Command("", conv.Command)
+	cmd := exec.Command(conv.Command, conv.CommandArgs...)
 
 	ProgressPipe(cmd, conv.ProgressChannel)
 	return nil

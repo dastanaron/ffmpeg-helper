@@ -2,5 +2,7 @@
 commands:
   - name: 'Telegram'
     cmd: 'ffmpeg -y -i {if} -pix_fmt yuv420p -codec:a aac -c:v libx264 {of}' 
-  - name: 'Cut Audio'
+    description: 'Convert video for telegram app'
+  - name: 'MP3 Audio'
     cmd: 'ffmpeg -y -i {if} -vn -ar 44100 -ac 2 -ab 192K -f mp3 {of}'
+    description: 'Cut audio in mp3 format'
