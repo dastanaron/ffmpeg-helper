@@ -2,6 +2,8 @@
 
 FFmpeg Helper is a command-line tool that simplifies the use of FFmpeg by providing a user-friendly interface for executing predefined FFmpeg commands. It allows users to select from a list of commands, modify them, and execute them with ease.
 
+[demo](./demo/ffmpeg-demo-tg.mp4)
+
 ## Features
 
 - **Predefined Commands**: Comes with default FFmpeg commands for common tasks.
